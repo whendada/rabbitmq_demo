@@ -1,4 +1,4 @@
-package chapter_1;
+package hello_world;
 
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;
@@ -10,16 +10,6 @@ import java.util.concurrent.TimeoutException;
 
 public class Send {
 
-    static class Test {
-        String name;
-        Integer age;
-
-        Test(String name, Integer age) {
-            this.name = name;
-            this.age = age;
-        }
-    }
-
     private final static String QUEUE_NAME = "routineKey";
 
     public static void main(String[] args) {
@@ -28,7 +18,6 @@ public class Send {
         factory.setUsername("admin");
         factory.setPassword("password");
         factory.setPort(5672);
-        Test test = new Test("asd", 1);
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);

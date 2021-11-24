@@ -1,4 +1,4 @@
-package chapter_1;
+package hello_world;
 
 import com.rabbitmq.client.*;
 
