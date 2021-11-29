@@ -12,6 +12,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeoutException;
 
+// rpc就是通过队列完成的，未用 exchange
 public class RPCClient implements AutoCloseable{
 
     private final Connection connection;
@@ -44,6 +45,9 @@ public class RPCClient implements AutoCloseable{
     public String call(String message) throws IOException, InterruptedException {
         final String corrId = UUID.randomUUID().toString();
 
+        // 设置参数
+        // 1、correlationID是为每个request设置的，返回来的时候需要判断
+        // 2、replyTo是一个回调队列，请求先通过 rpc_queue，等server处理完之后，把结果返回给 replyTo
         String replyQueueName = channel.queueDeclare().getQueue();
         AMQP.BasicProperties props = new AMQP.BasicProperties
                 .Builder()
@@ -54,9 +58,11 @@ public class RPCClient implements AutoCloseable{
         String requestQueueName = "rpc_queue";
         channel.basicPublish("", requestQueueName, props, message.getBytes(StandardCharsets.UTF_8));
 
+        // 3、所以客户端（client）只需要消费从replyTo来的消息即可
         final BlockingQueue<String> response = new ArrayBlockingQueue<>(1);
 
         String ctag = channel.basicConsume(replyQueueName, true, (consumerTag, delivery) -> {
+            // 消费前 check correlationId
             if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                 response.offer(new String(delivery.getBody(), StandardCharsets.UTF_8));
             }

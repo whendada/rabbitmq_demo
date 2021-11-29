@@ -23,7 +23,7 @@ public class Worker {
         channel.queueDeclare(TASK_QUEUE_NAME, true, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
-        // 这里表示不要把消息给一个正在处理消息的consumer
+        // 这里表示不要把消息给一个正在处理消息的consumer，类似于一个锁，在消息被确认之前是不会释放的
         channel.basicQos(1);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {

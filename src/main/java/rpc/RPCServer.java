@@ -42,9 +42,11 @@ public class RPCServer {
                 } catch (RuntimeException e) {
                     System.out.println(" [.] " + e.toString());
                 } finally {
+                    // 这里能发现，replyTo参数是在delivery里面被携带过来的，这里会把结果发给replyTo队列，
                     channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     // RabbitMq consumer worker thread notifies the RPC server owner thread
+                    // 这一步看不太懂
                     synchronized (monitor) {
                         monitor.notify();
                     }
